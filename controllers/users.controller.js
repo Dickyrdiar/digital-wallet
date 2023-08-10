@@ -1,8 +1,11 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable new-cap */
 const user = require('../model/user')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 const stripe = require('../shared/stripe.js')
+const passport = require('../shared/AuthGoogle.js')
+const { default: axios } = require('axios')
 
 // findAll
 exports.findAll = async (req, res) => {
@@ -24,11 +27,6 @@ exports.SigupUsers = async (req, res) => {
     if (existingUser) {
       return res.status(400).json({ message: 'Username already exist' })
     }
-
-    // const costumer = await stripe.costumers.create({
-    //   email,
-    //   username
-    // })
 
     const costumer = await stripe.costumer.create({
       email,
@@ -66,11 +64,26 @@ exports.Login = async (req, res) => {
       return res.status(401).json({ message: 'password is not match' })
     }
 
+    // get location with ip
+    const userIpAddres = req.ip
+    const responseIp = await axios.get(`http://ipinfo.io/${userIpAddres}/json`)
+    const location = responseIp.location
+
     const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '30m' })
-    return res.status(200).send({ token, userLogin, message: 'login has been success' })
+    return res.status(200).send({ token, userLogin, location, message: 'login has been success' })
   } catch (error) {
     return res.status(400).json({ error: error.message || 'internale server error' })
   }
+}
+
+exports.loginWithGoogle = async (req, res) => {
+  // passport.use(new Googl())
+  passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/plus.login'] })
+}
+
+exports.callBackGoogle = async (req, res) => {
+  passport.authenticate('google', { failureRedirect: '/api/v1/login' })
+  res.redirect('/')
 }
 
 // logout

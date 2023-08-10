@@ -12,6 +12,7 @@ module.exports = (app) => {
   app.post('/api/v1/register', users.SigupUsers)
   app.post('/api/v1/login', users.Login)
   app.post('/api/v1/logout', users.logout)
+  app.get('/api/v1/authGoogle', users.loginWithGoogle)
 
   // wallet constroller
   app.get('/api/v1/wallets', verifyToken, wallets.getallWallet)

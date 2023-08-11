@@ -2,18 +2,15 @@ const transactions = require('../model/transaction')
 
 // search history
 exports.searchHistory = async (req, res) => {
-  transactions.find({ $text: { $search: req.body.query } })
-    .then(result => {
-      console.log(result)
-      res.status(200).json({
-        result
-      })
+  try {
+    const { q } = req.query
+    const searchResult = transactions.find({
+      $text: { $search: q.body.query }
     })
-    .catch(err => {
-      res.status(500).json({
-        error: err
-      })
-    })
+    return res.status(200).send({ searchResult })
+  } catch (err) {
+    res.status(500).send({ error: err })
+  }
 }
 
 // history transaction

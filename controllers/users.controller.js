@@ -13,7 +13,6 @@ exports.findAll = async (req, res) => {
     const findAllUser = await user.find()
     return res.send({ message: 'get all data succes', users: findAllUser })
   } catch (error) {
-    console.log(error)
     return res.status(400).send({ message: error.message || 'iternal server error' })
   }
 }
@@ -33,13 +32,10 @@ exports.SigupUsers = async (req, res) => {
       username
     })
 
-    console.log('costumer', costumer)
-
     const salt = await bcrypt.genSalt(10)
     const passwordHash = await bcrypt.hash(password, salt)
     const NewUser = new user({ username, email, password: passwordHash, stripeCostumerId: costumer.id })
     await NewUser.save()
-    console.log('new user', NewUser)
 
     return res.status(201).send({ message: 'register has been succes', NewUser })
   } catch (error) {
@@ -53,7 +49,6 @@ exports.Login = async (req, res) => {
 
   try {
     const userLogin = await user.findOne({ email })
-    console.log('check log', userLogin)
     if (!userLogin) {
       return res.status(401).json({ message: 'Invalid credential' })
     }
@@ -76,6 +71,7 @@ exports.Login = async (req, res) => {
   }
 }
 
+// login with google
 exports.loginWithGoogle = async (req, res) => {
   // passport.use(new Googl())
   passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/plus.login'] })
@@ -94,7 +90,6 @@ exports.logout = async (req, res) => {
     await user.findOneAndDelete({ token })
     return res.status(200).send({ message: 'user already logout' })
   } catch (error) {
-    console.log('error', error)
     return res.status(400).send({ message: 'logout is failed' })
   }
 }

@@ -26,14 +26,11 @@ exports.newWallet = async (req, res) => {
       costumer: existingWallet.stripeCustomerId
     })
 
-    console.log('payment', paymentIntent)
-
     // create a wallet
     const createWallet = new Wallet({ userId, balance })
     await createWallet.save()
     return res.status(200).json({ data: createWallet, paymentIntent })
   } catch (err) {
-    console.log(err)
     return res.status(500).json({ error: err.message, message: 'Internal server error' })
   }
 }
@@ -53,6 +50,6 @@ exports.getBallance = async (req, res) => {
 
     return res.status(200).json({ balance })
   } catch (err) {
-    console.log(err)
+    res.status(500).send({ message: 'internal server error', error: err.message })
   }
 }

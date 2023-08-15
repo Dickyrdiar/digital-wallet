@@ -12,8 +12,8 @@ module.exports = (app) => {
   app.get('/api/v1/users', verifyToken, users.findAll)
   app.post('/api/v1/register', users.SigupUsers)
   app.post('/api/v1/login', users.Login)
-  app.post('/api/v1/logout', users.logout)
-  app.get('/api/v1/authGoogle', users.loginWithGoogle)
+  // app.post('/api/v1/logout', users.logout)
+  // app.get('/api/v1/authGoogle', users.loginWithGoogle)
 
   // wallet constroller
   app.get('/api/v1/wallets', verifyToken, wallets.getallWallet)
@@ -22,7 +22,7 @@ module.exports = (app) => {
 
   // wallet transaction
   app.post('/api/v1/transaction', verifyToken, transactions.transactions)
-  app.get('/api/v1/history/:id', verifyToken, historys.HistortTransaction)
+  app.get('/api/v1/history/', verifyToken, historys.HistortTransaction)
   app.post('/api/v1/search', verifyToken, historys.searchHistory)
 
   // wallet transfer

@@ -46,6 +46,7 @@ exports.SigupUsers = async (req, res) => {
 // login
 exports.Login = async (req, res) => {
   const { email, password } = req.body
+  const { latitude, longitude } = req.body
 
   try {
     const userLogin = await user.findOne({ email })
@@ -53,19 +54,19 @@ exports.Login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid credential' })
     }
 
-    const isPasswordValid = await bcrypt.compare(password, userLogin.password)
+    // const isPasswordValid = await bcrypt.compare(password, userLogin.password)
+    const isPasswordValid = await bcrypt.hashSync(password, userLogin.password)
 
-    if (isPasswordValid) {
+    console.log('check user login', isPasswordValid)
+
+    if (!isPasswordValid) {
       return res.status(401).json({ message: 'password is not match' })
     }
 
     // get location with ip
-    const userIpAddres = req.ip
-    const responseIp = await axios.get(`http://ipinfo.io/${userIpAddres}/json`)
-    const location = responseIp.location
-
+    const locations = { latitude, longitude }
     const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '30m' })
-    return res.status(200).send({ token, userLogin, location, message: 'login has been success' })
+    return res.status(200).send({ token, userLogin, locations, message: 'login has been success' })
   } catch (error) {
     return res.status(400).json({ error: error.message || 'internale server error' })
   }
@@ -74,11 +75,14 @@ exports.Login = async (req, res) => {
 // login with google
 exports.loginWithGoogle = async (req, res) => {
   // passport.use(new Googl())
-  passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/plus.login'] })
+  // passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/plus.login'] })
+  passport.authenticate('google', {
+    scope: ['email', 'profile']
+  })
 }
 
 exports.callBackGoogle = async (req, res) => {
-  passport.authenticate('google', { failureRedirect: '/api/v1/login' })
+  passport.authenticate('google', { failureRedirect: '/api/v1/login', successRedirect: '/api/v1/wallets' })
   res.redirect('/')
 }
 

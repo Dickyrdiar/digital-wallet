@@ -1,4 +1,6 @@
+/* eslint-disable no-array-constructor */
 const transactions = require('../model/transaction')
+const { Transfers } = require('./transfer.controller')
 
 // search history
 exports.searchHistory = async (req, res) => {
@@ -17,8 +19,12 @@ exports.searchHistory = async (req, res) => {
 exports.HistortTransaction = async (req, res) => {
   try {
     const { userId } = req.params
+    const transfers = await Transfers.find({ userId }).sort({ createdAt: -1 })
     const transaction = await transactions.find({ userId }).sort({ createdAt: -1 })
-    res.status(200).send({ transaction })
+
+    const ArrayHistory = new Array(transfers, transaction)
+
+    res.status(200).send({ data: ArrayHistory })
   } catch (error) {
     res.status(500).send({ error: error.message, message: 'internal server error' })
   }

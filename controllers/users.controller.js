@@ -9,8 +9,12 @@ const { default: axios } = require('axios')
 
 // findAll
 exports.findAll = async (req, res) => {
+  const { userId } = req.params.userId
+
   try {
-    const findAllUser = await user.find()
+    const findAllUser = await user.findById({ userId }).populate('wallet')
+
+    console.log('chekc', findAllUser)
     return res.send({ message: 'get all data succes', users: findAllUser })
   } catch (error) {
     return res.status(400).send({ message: error.message || 'iternal server error' })
@@ -65,7 +69,7 @@ exports.Login = async (req, res) => {
     const location = responseIp.location
 
     const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '30m' })
-    return res.status(200).send({ token, userLogin, location, message: 'login has been success' })
+    return res.status(200).send({ token, userLogin, message: 'login has been success' })
   } catch (error) {
     return res.status(400).json({ error: error.message || 'internale server error' })
   }

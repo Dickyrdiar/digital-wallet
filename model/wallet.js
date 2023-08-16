@@ -5,12 +5,14 @@ const Schema = mongoose.Schema
 const WalletSchema = mongoose.Schema({
   userId: { type: String, require: true },
   balance: { type: Number, default: 0 },
-  _users: [{
+  users: {
     type: Schema.Types.ObjectId,
-    ref: 'User'
-  }]
+    ref: 'User',
+    unique: true
+  }
 }, {
-  timestamps: true
+  timestamps: true,
+  strictPopulate: false
 })
 
 module.exports = mongoose.model('Wallet', WalletSchema)

@@ -1,5 +1,6 @@
 /* eslint-disable no-useless-catch */
 /* eslint-disable no-unreachable */
+const fcmNode = require('fcm-node')
 const Transfers = require('../model/transfer.js')
 const user = require('../model/user')
 const stripe = require('../shared/stripe.js')
@@ -31,6 +32,21 @@ exports.Transfers = async (req, res) => {
     if (senderUser.balance < amount) {
       res.status(400).send({ message: 'Insufficient balance' })
     }
+
+    // notifivation can send to users
+    const message = {
+      to: receiverUsername,
+      notificationL: {
+        title: 'Transfer notification',
+        body: `You Received a transfer of $${amount}`
+      }
+    }
+
+    fcmNode.send(message, (error, response) => {
+      if (error) {
+        console.error('error sending notification:', error)
+      }
+    })
 
     senderUser.balance -= amount
     await senderUser.save()

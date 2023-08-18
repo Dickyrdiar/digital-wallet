@@ -9,16 +9,17 @@ module.exports = (app) => {
   const { verifyToken } = require('../middleware/JwtFerivication.js')
 
   // users controller
-  app.get('/api/v1/users', verifyToken, users.findAll)
+  app.get('/api/v1/:userId/users', verifyToken, users.findAll)
   app.post('/api/v1/register', users.SigupUsers)
   app.post('/api/v1/login', users.Login)
   app.post('/api/v1/logout', users.logout)
   app.get('/api/v1/authGoogle', users.loginWithGoogle)
 
   // wallet constroller
-  app.get('/api/v1/wallets', verifyToken, wallets.getallWallet)
-  app.post('/api/v1/wallets', verifyToken, wallets.newWallet)
-  app.get('/api/wallets/:userId', verifyToken, wallets.getBallance)
+  app.get('/api/v1/:userId/wallets', verifyToken, wallets.getallWallet)
+  app.post('/api/v1/:userId/wallets', verifyToken, wallets.newWallet)
+  app.get('/api/v1/wallets/:userId', verifyToken, wallets.getBallance)
+  app.put('/api/v1/:userId/topupWallet', wallets.createTopup)
 
   // wallet transaction
   app.post('/api/v1/transaction', verifyToken, transactions.transactions)

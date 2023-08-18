@@ -2,6 +2,7 @@ require('dotenv').config()
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 const Transaction = require('../model/transaction')
 const user = require('../model/user')
+const fcmNode = require('fcm-node')
 
 exports.transactions = async (req, res) => {
   try {
@@ -30,6 +31,22 @@ exports.transactions = async (req, res) => {
       paymentMethodId,
       status: payemntIntent.status
     })
+
+    // notification send
+    const message = {
+      to: userId,
+      notificationL: {
+        title: 'Transfer notification',
+        body: `You Received a transfer of $${amount}`
+      }
+    }
+
+    fcmNode.send(message, (error, response) => {
+      if (error) {
+        console.error('error sending notification:', error)
+      }
+    })
+
     await transaction.save()
     return res.status(200).json({ data: transaction, message: 'transaction has been created' })
   } catch (error) {

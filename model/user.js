@@ -1,13 +1,18 @@
 const mongoose = require('mongoose')
 const bcrypt = require('bcrypt')
-// const Schema = mongoose.Schema
 
 const UserSchema = mongoose.Schema({
   username: { type: String, unique: true, required: true },
   email: { type: String, required: true },
   password: { type: String, required: true },
+  wallet: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Wallet'
+  },
   stripeCostumerId: { type: String }
+
 }, {
+  // strictPopulate: false,
   timestamps: true
 })
 

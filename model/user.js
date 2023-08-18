@@ -5,13 +5,14 @@ const UserSchema = mongoose.Schema({
   username: { type: String, unique: true, required: true },
   email: { type: String, required: true },
   password: { type: String, required: true },
-  stripeCostumerId: { type: String },
-  _wallet: {
+  wallet: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Wallet'
-  }
+  },
+  stripeCostumerId: { type: String }
+
 }, {
-  strictPopulate: false,
+  // strictPopulate: false,
   timestamps: true
 })
 

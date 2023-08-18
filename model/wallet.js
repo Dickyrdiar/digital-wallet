@@ -4,15 +4,15 @@ const Schema = mongoose.Schema
 
 const WalletSchema = mongoose.Schema({
   userId: { type: String, require: true },
-  balance: { type: Number, default: 0 },
-  users: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    unique: true
+  balance: { type: Number, require: true, default: 0 },
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+    // unique: true
   }
 }, {
-  timestamps: true,
-  strictPopulate: false
+  timestamps: true
+  // strictPopulate: false
 })
 
 module.exports = mongoose.model('Wallet', WalletSchema)

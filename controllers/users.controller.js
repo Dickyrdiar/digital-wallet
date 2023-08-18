@@ -5,17 +5,22 @@ const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 const stripe = require('../shared/stripe.js')
 const passport = require('../shared/AuthGoogle.js')
-const { default: axios } = require('axios')
+const geoip = require('geoip-lite')
+const ip = require('ip')
+const axios = require('axios')
 
 // findAll
 exports.findAll = async (req, res) => {
-  const { userId } = req.params.userId
+  const { userId } = req.params
 
   try {
-    const findAllUser = await user.findById({ userId }).populate('wallet')
+    const userWithWallet = await user.findById(userId).populate({
+      path: 'wallet',
+      options: { strictPopulate: false }
+    })
 
-    console.log('chekc', findAllUser)
-    return res.send({ message: 'get all data succes', users: findAllUser })
+    console.log('chekc', userWithWallet)
+    return res.send({ message: 'get all data succes', users: userWithWallet })
   } catch (error) {
     return res.status(400).send({ message: error.message || 'iternal server error' })
   }
@@ -31,14 +36,14 @@ exports.SigupUsers = async (req, res) => {
       return res.status(400).json({ message: 'Username already exist' })
     }
 
-    const costumer = await stripe.costumer.create({
-      email,
-      username
-    })
+    // const costumer = await stripe.costumer.create({
+    //   email,
+    //   username
+    // })
 
     const salt = await bcrypt.genSalt(10)
     const passwordHash = await bcrypt.hash(password, salt)
-    const NewUser = new user({ username, email, password: passwordHash, stripeCostumerId: costumer.id })
+    const NewUser = new user({ username, email, password: passwordHash })
     await NewUser.save()
 
     return res.status(201).send({ message: 'register has been succes', NewUser })
@@ -64,12 +69,23 @@ exports.Login = async (req, res) => {
     }
 
     // get location with ip
-    const userIpAddres = req.ip
-    const responseIp = await axios.get(`http://ipinfo.io/${userIpAddres}/json`)
-    const location = responseIp.location
+    const ipAddress = ip.address()
+    const geoLoc = `http://ipinfo.io/${ipAddress}/json`
+    console.log(geoLoc)
+
+    // const location = {
+    //   ip: geoLoc.padStart.ip
+    // }
+
+    const responseLocation = await axios.get()
 
     const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '30m' })
-    return res.status(200).send({ token, userLogin, message: 'login has been success' })
+    return res.status(200).send({
+      token,
+      userLogin,
+      // location: geoLoc,
+      message: 'login has been success'
+    })
   } catch (error) {
     return res.status(400).json({ error: error.message || 'internale server error' })
   }

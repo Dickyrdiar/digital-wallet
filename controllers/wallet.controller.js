@@ -1,6 +1,11 @@
+/* eslint-disable no-const-assign */
 /* eslint-disable no-unused-vars */
+/* eslint-disable array-callback-return */
+/* eslint-disable no-labels */
+/* eslint-disable no-unused-expressions */
+
 const { isValidObjectId } = require('mongoose')
-// const user = require('../model/user')
+const user = require('../model/user')
 const Wallet = require('../model/wallet')
 require('dotenv').config()
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
@@ -10,11 +15,16 @@ exports.getallWallet = async (req, res) => {
   const { userId } = req.params.userId
 
   try {
-    const WalletUsers = await Wallet.findOne({ user: userId }).populate(['userId'])
-    console.log('check wallet', WalletUsers)
+    const WalletUsers = await Wallet.find().populate({
+      path: 'user',
+      options: { strictPopulate: false }
+    })
+
+    const userWallet = await user.find(userId).select('username email')
+    console.log('check wallet', WalletUsers, userWallet)
 
     // const getAllData = await user.find().populate('User')
-    return res.status(200).json({ message: 'get data is succes', data: WalletUsers })
+    return res.status(200).json({ message: 'get data is succes', data: { WalletUsers, userWallet } })
   } catch (err) {
     return res.status(500).json({ message: 'Internal server Error', error: err.message })
   }
@@ -22,26 +32,15 @@ exports.getallWallet = async (req, res) => {
 
 // create wallet
 exports.newWallet = async (req, res) => {
-  const { balance, userId } = req.body
-  // const { userId } = req.params.userId
+  const { balance } = req.body
+  const { userId } = req.params.userId
   try {
-    const existingWallet = await Wallet.findById({ userId })
-    if (!existingWallet) {
+    const existingWallet = await user.findById(userId)
+    if (existingWallet) {
       return res.status(400).json({ message: 'wallet already exist' })
     }
 
-    if (!isValidObjectId(userId)) return Error({ status: 422 })
-
-    // prototype fixed
-    const createWallets = await Wallet.findOneAndUpdate(
-      {
-        user: userId
-      },
-      { $set: { balance } },
-      { new: true }
-    )
-
-    console.log('check new wallets', existingWallet)
+    if (isValidObjectId(userId)) return Error({ status: 422 })
 
     // const paymentIntent = await stripe.paymentIntent.create({
     //   currency: 'idr',
@@ -49,7 +48,7 @@ exports.newWallet = async (req, res) => {
     // })
 
     // create a wallet
-    const createWallet = new Wallet({ createWallets })
+    const createWallet = new Wallet({ userId, balance })
     await createWallet.save()
     return res.status(200).json({ data: createWallet })
   } catch (err) {
@@ -59,36 +58,40 @@ exports.newWallet = async (req, res) => {
 
 // create topup
 exports.createTopup = async (req, res) => {
-  const { balance, userId } = req.body
-
-  if (!userId || !balance) {
-    return res.status(400).send({ error: 'userId and balance is required' })
-  }
+  const { balance } = req.body
+  const { userId } = req.params.userId
 
   try {
-    const userWallet = await Wallet.findOneAndUpdate(
-      { user: userId },
-      { $inc: { balance } },
-      { new: true }
-    )
+    const users = await user.find({ userId }).select('username email')
+    console.log('check user', users)
 
-    if (userWallet) {
-      return res.status(400).send({ error: 'wallet is not found' })
+    if (!user) {
+      return res.status(404).send({ error: 'user not found' })
     }
-    console.log('check user wallet', userWallet)
 
-    res.json(userWallet)
+    const wallets = await Wallet.findOne({ user: userId })
+    console.log('wallet', wallets)
+
+    if (!wallets) {
+      wallets = new Wallet({ user: userId })
+    }
+
+    wallets.balance += balance
+    await wallets.save()
+
+    return res.status(200).send({ message: 'top up is sucess', data: { wallets, user: users } })
   } catch (error) {
-    console.log(error.message)
+    console.log(error)
   }
 }
 
 // get Balance
 exports.getBallance = async (req, res) => {
-  const { userId } = req.params
+  const { userId } = req.params.userId
 
   try {
-    const wallet = await Wallet.findOne({ userId })
+    const wallet = await user.findOne(userId)
+    console.log('check wallet', wallet)
     if (!wallet) {
       return res.status(404).json({ message: 'Wallet not Found' })
     }

@@ -3,9 +3,9 @@
 const user = require('../model/user')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
-const stripe = require('../shared/stripe.js')
+// const stripe = require('../shared/stripe.js')
 const passport = require('../shared/AuthGoogle.js')
-const geoip = require('geoip-lite')
+// const geoip = require('geoip-lite')
 const ip = require('ip')
 const axios = require('axios')
 
@@ -69,15 +69,9 @@ exports.Login = async (req, res) => {
     }
 
     // get location with ip
-    const ipAddress = ip.address()
-    const geoLoc = `http://ipinfo.io/${ipAddress}/json`
-    console.log(geoLoc)
-
-    // const location = {
-    //   ip: geoLoc.padStart.ip
-    // }
-
-    const responseLocation = await axios.get()
+    // const ipAddress = ip.address()
+    // const geoLoc = `http://ipinfo.io/${ipAddress}/json`
+    // console.log(geoLoc)
 
     const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '30m' })
     return res.status(200).send({
@@ -104,12 +98,10 @@ exports.callBackGoogle = async (req, res) => {
 
 // logout
 exports.logout = async (req, res) => {
-  const { token } = req.body
-
-  try {
-    await user.findOneAndDelete({ token })
-    return res.status(200).send({ message: 'user already logout' })
-  } catch (error) {
-    return res.status(400).send({ message: 'logout is failed' })
-  }
+  req.session.destroy(err => {
+    if (err) {
+      return res.status(500).json({ message: 'Error loging out' })
+    }
+  })
+  res.json({ message: 'Logged out Successfuly' })
 }

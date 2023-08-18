@@ -7,6 +7,7 @@ module.exports = (app) => {
 
   // verify from middleware
   const { verifyToken } = require('../middleware/JwtFerivication.js')
+  // const protectedUser = require('./protectecRouter.js')
 
   // users controller
   app.get('/api/v1/:userId/users', verifyToken, users.findAll)
@@ -14,12 +15,13 @@ module.exports = (app) => {
   app.post('/api/v1/login', users.Login)
   app.post('/api/v1/logout', users.logout)
   app.get('/api/v1/authGoogle', users.loginWithGoogle)
+  app.post('/api/v1/logout', users.logout)
 
   // wallet constroller
   app.get('/api/v1/:userId/wallets', verifyToken, wallets.getallWallet)
   app.post('/api/v1/:userId/wallets', verifyToken, wallets.newWallet)
   app.get('/api/v1/wallets/:userId', verifyToken, wallets.getBallance)
-  app.put('/api/v1/:userId/topupWallet', wallets.createTopup)
+  app.put('/api/v1/:userId/topupWallet', verifyToken, wallets.createTopup)
 
   // wallet transaction
   app.post('/api/v1/transaction', verifyToken, transactions.transactions)
@@ -29,4 +31,10 @@ module.exports = (app) => {
   // wallet transfer
   app.post('/api/v1/transfers', verifyToken, transfers.Transfers)
   app.get('/api/v1/transfers', verifyToken, transfers.getAllTransfer)
+
+  // protected
+  // app.get('/protected', verifyToken, (req, res) => {
+  //   const userId = req.userId
+  //   res.json({ message: 'protected contend', userId })
+  // })
 }
